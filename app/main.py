@@ -1,25 +1,12 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import joblib
+from app.schemas import Features
+from app.model import load_model, load_scaler
 import numpy as np
 
-class Features(BaseModel):
-    age: float
-    sex: float
-    bmi: float
-    bp: float
-    s1: float
-    s2: float
-    s3: float
-    s4: float
-    s5: float
-    s6: float
-
-scaler = joblib.load("app/scaler.joblib")
-model = joblib.load("app/model.joblib")
-MODEL_VERSION = "0.1"
-
 app = FastAPI()
+model = load_model()
+scaler = load_scaler()
+MODEL_VERSION = "0.1"
 
 @app.get("/health")
 def health():
@@ -33,4 +20,4 @@ def predict(features: Features):
         prediction = model.predict(arr_scaled)[0]
         return {"prediction": float(prediction)}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Input error: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid input: {e}")
